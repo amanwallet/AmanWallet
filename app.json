@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "Aman.Wallet",
+    "name": "Aman-Wallet",
     "slug": "aman-wallet",
     "version": "3.7.9",
     "orientation": "portrait",
@@ -31,15 +31,14 @@
     },
     "plugins": [
       "expo-secure-store",
-      [
-        "expo-updates",
-        {
-          "username": "amanwallet"
-        }
-      ],
       "expo-web-browser"
     ],
     "runtimeVersion": "3.7.9",
-    "owner": "amanwallet"
+    "extra": {
+      "eas": {
+        "projectId": "55ccd51e-ab53-4aed-9d5a-b93f1bcc4af5"
+      }
+    },
+    "owner": "aman-wallet"
   }
 }
