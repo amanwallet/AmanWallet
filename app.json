@@ -1,0 +1,45 @@
+{
+  "expo": {
+    "name": "Aman.Wallet",
+    "slug": "aman-wallet",
+    "version": "3.7.9",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.yousef.amanwallet",
+      "buildNumber": "1",
+      "infoPlist": {
+        "NSPhotoLibraryAddUsageDescription": "نحتاج هذا الإذن لحفظ رمز الاستلام (QR) في الأستديو.",
+        "NSFaceIDUsageDescription": "نحتاج Face ID للسماح بتسجيل الدخول السريع إلى المحفظة.",
+        "ITSAppUsesNonExemptEncryption": false
+      }
+    },
+    "android": {
+      "package": "com.amanwallet.app",
+      "versionCode": 2,
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#FFFFFF"
+      }
+    },
+    "plugins": [
+      "expo-secure-store",
+      [
+        "expo-updates",
+        {
+          "username": "amanwallet"
+        }
+      ],
+      "expo-web-browser"
+    ],
+    "runtimeVersion": "3.7.9",
+    "owner": "amanwallet"
+  }
+}

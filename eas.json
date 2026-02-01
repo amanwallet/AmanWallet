@@ -1,0 +1,36 @@
+{
+  "cli": {
+    "version": ">=16.5.0",
+    "appVersionSource": "remote",
+    "promptToConfigurePushNotifications": false
+  },
+  "build": {
+    "development": {
+      "android": { "buildType": "apk" },
+      "ios": { "simulator": true },
+      "channel": "development"
+    },
+    "preview": {
+      "android": { "buildType": "apk" },
+      "ios": { "simulator": true },
+      "channel": "preview"
+    },
+    "production": {
+      "android": {
+        "buildType": "apk",
+        "autoIncrement": "versionCode"
+      },
+      "ios": {
+        "autoIncrement": "buildNumber"
+      },
+      "channel": "production"
+    }
+  },
+  "submit": {
+    "production": {
+      "ios": {
+        "appleId": "YOUR_APPLE_ID@example.com"
+      }
+    }
+  }
+}
