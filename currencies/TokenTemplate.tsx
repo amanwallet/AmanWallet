@@ -129,6 +129,13 @@ export default function TokenTemplate(p: Props) {
     return () => clearInterval(id);
   }, [symbol]);
 
+  // طلب إذن الكاميرا عند فتح نافذة الإرسال (تحسين تجربة المستخدم)
+  useEffect(() => {
+    if (sendOpen && !permission?.granted) {
+      requestPermission();
+    }
+  }, [sendOpen]);
+
   useEffect(() => {
     const sh = Keyboard.addListener("keyboardDidShow", () => setKbShown(true));
     const hd = Keyboard.addListener("keyboardDidHide", () => setKbShown(false));
@@ -162,12 +169,11 @@ export default function TokenTemplate(p: Props) {
     }
   };
 
-  const openScanner = async () => {
-    if (!permission?.granted) {
-      const { granted } = await requestPermission();
-      if (!granted) return;
-    }
-    setScanOpen(true);
+  /* ===== دالة فتح الماسح الضوئي - نسخة سريعة ===== */
+  const openScanner = () => {
+    setScanOpen(true);      // ✅ فتح فوري بدون انتظار
+    setTorchOn(false);
+    setFacing("back");
   };
 
   // دالة عرض رسالة نجاح
@@ -783,58 +789,214 @@ export default function TokenTemplate(p: Props) {
           </KeyboardAvoidingView>
         </Modal>
 
-        {/* الماسح الضوئي */}
-        <Modal 
-          visible={scanOpen} 
-          animationType="slide" 
+        {/* الماسح الضوئي - النسخة المحسنة */}
+        <Modal
+          visible={scanOpen}
+          animationType="slide"
           onRequestClose={() => setScanOpen(false)}
         >
           <View style={{ flex: 1, backgroundColor: "#000" }}>
             <View style={[
-              styles.scanHeader, 
-              { 
-                flexDirection: rtl ? "row-reverse" : "row" 
-              }
+              styles.scanHeader,
+              { flexDirection: rtl ? "row-reverse" : "row" }
             ]}>
               <Text style={styles.scanTitle}>
                 {rtl ? "امسح رمز QR" : "Scan QR"}
               </Text>
-              <TouchableOpacity 
-                onPress={() => setScanOpen(false)} 
-                style={styles.closeBtn}
-              >
+              <TouchableOpacity onPress={() => setScanOpen(false)} style={styles.closeBtn}>
                 <Ionicons name="close" size={24} color="#fff" />
               </TouchableOpacity>
             </View>
-            
-            {permission?.granted ? (
-              <View style={{ flex: 1 }}>
-                <CameraView 
-                  style={{ flex: 1 }} 
-                  facing={facing} 
-                  torch={torchOn ? "on" : "off"} 
-                  barcodeScannerSettings={{ barcodeTypes: ["qr"] }}
-                  onBarcodeScanned={({ data }) => { 
-                    try { 
-                      if (data) onRecipientChange(data); 
-                    } catch {} 
-                    setScanOpen(false); 
-                  }} 
-                />
-              </View>
-            ) : (
-              <View style={styles.permissionDenied}>
-                <Ionicons name="camera-off-outline" size={64} color="#fff" />
-                <Text style={styles.permissionText}>
-                  {rtl ? "لا إذن للكاميرا" : "No camera permission"}
-                </Text>
-              </View>
-            )}
+
+            <ScannerBody
+              rtl={rtl}
+              permission={permission}
+              requestPermission={requestPermission}
+              facing={facing}
+              torchOn={torchOn}
+              setTorchOn={setTorchOn}
+              setFacing={setFacing}
+              onScan={(data) => {
+                const cleaned = normalizeRecipientFromQr(data);
+                if (cleaned) onRecipientChange(cleaned);
+                setScanOpen(false);
+              }}
+            />
           </View>
         </Modal>
       </KeyboardAvoidingView>
     </Animated.View>
   );
+}
+
+/* ============ مكون المسح الضوئي المنفصل ============ */
+function ScannerBody(props: {
+  rtl: boolean;
+  permission: { granted?: boolean; canAskAgain?: boolean } | null;
+  requestPermission: () => Promise<{ granted: boolean }>;
+  facing: "back" | "front";
+  torchOn: boolean;
+  setTorchOn: (v: boolean) => void;
+  setFacing: (v: "back" | "front") => void;
+  onScan: (data: string) => void;
+}) {
+  const {
+    rtl, permission, requestPermission,
+    facing, torchOn, setTorchOn, setFacing, onScan
+  } = props;
+
+  const granted = !!permission?.granted;
+  const canAskAgain = permission?.canAskAgain !== false;
+
+  const [asking, setAsking] = React.useState(false);
+  const scanLock = React.useRef(false);
+
+  // ✅ اطلب الإذن داخل المودال مباشرة (بدون ما يعلّق زر QR)
+  React.useEffect(() => {
+    let mounted = true;
+    (async () => {
+      if (!granted && canAskAgain && !asking) {
+        setAsking(true);
+        try {
+          await requestPermission();
+        } finally {
+          if (mounted) setAsking(false);
+        }
+      }
+    })();
+    return () => { mounted = false; };
+  }, [granted, canAskAgain]);
+
+  if (!permission) {
+    return (
+      <View style={styles.permissionDenied}>
+        <ActivityIndicator color="#fff" />
+        <Text style={styles.permissionText}>
+          {rtl ? "جاري التحقق من صلاحيات الكاميرا..." : "Checking camera permissions..."}
+        </Text>
+      </View>
+    );
+  }
+
+  if (!granted) {
+    return (
+      <View style={styles.permissionDenied}>
+        <Ionicons name="camera-off-outline" size={64} color="#fff" />
+        <Text style={styles.permissionText}>
+          {rtl ? "لا يوجد إذن للكاميرا" : "No camera permission"}
+        </Text>
+
+        {asking && <ActivityIndicator color="#fff" style={{ marginTop: 14 }} />}
+
+        {canAskAgain && !asking && (
+          <TouchableOpacity
+            onPress={() => requestPermission()}
+            style={{
+              marginTop: 16,
+              paddingVertical: 12,
+              paddingHorizontal: 16,
+              borderRadius: 12,
+              backgroundColor: "#2F7CF6",
+            }}
+          >
+            <Text style={{ color: "#fff", fontWeight: "800" }}>
+              {rtl ? "السماح بالكاميرا" : "Allow Camera"}
+            </Text>
+          </TouchableOpacity>
+        )}
+
+        {!canAskAgain && (
+          <Text style={{ color: "rgba(255,255,255,0.7)", marginTop: 10, textAlign: "center" }}>
+            {rtl ? "فعّل إذن الكاميرا من إعدادات الجهاز ثم ارجع للتطبيق." : "Enable camera permission from Settings, then come back."}
+          </Text>
+        )}
+      </View>
+    );
+  }
+
+  return (
+    <View style={{ flex: 1 }}>
+      <CameraView
+        style={{ flex: 1 }}
+        facing={facing}
+        torch={torchOn ? "on" : "off"}
+        // ✅ لا تزيد types حتى لا يثقل
+        barcodeScannerSettings={{ barcodeTypes: ["qr"] }}
+        onBarcodeScanned={({ data }) => {
+          // ✅ يمنع المسح المتكرر
+          if (scanLock.current) return;
+          scanLock.current = true;
+
+          try {
+            onScan(data || "");
+          } finally {
+            setTimeout(() => { scanLock.current = false; }, 800);
+          }
+        }}
+      />
+
+      {/* أزرار التحكم في الكاميرا */}
+      <View style={{
+        position: "absolute",
+        bottom: 18,
+        left: 16,
+        right: 16,
+        flexDirection: "row",
+        gap: 10
+      }}>
+        <TouchableOpacity
+          onPress={() => setTorchOn(!torchOn)}
+          style={{
+            flex: 1,
+            backgroundColor: "rgba(255,255,255,0.12)",
+            paddingVertical: 12,
+            borderRadius: 14,
+            alignItems: "center",
+            flexDirection: "row",
+            justifyContent: "center",
+            gap: 8
+          }}
+        >
+          <Ionicons name={torchOn ? "flash" : "flash-outline"} size={18} color="#fff" />
+          <Text style={{ color: "#fff", fontWeight: "800" }}>
+            {rtl ? (torchOn ? "الفلاش: تشغيل" : "الفلاش: إيقاف") : (torchOn ? "Flash: On" : "Flash: Off")}
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          onPress={() => setFacing(facing === "back" ? "front" : "back")}
+          style={{
+            flex: 1,
+            backgroundColor: "rgba(255,255,255,0.12)",
+            paddingVertical: 12,
+            borderRadius: 14,
+            alignItems: "center",
+            flexDirection: "row",
+            justifyContent: "center",
+            gap: 8
+          }}
+        >
+          <Ionicons name="camera-reverse-outline" size={18} color="#fff" />
+          <Text style={{ color: "#fff", fontWeight: "800" }}>
+            {rtl ? "تبديل الكاميرا" : "Flip Camera"}
+          </Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+}
+
+function normalizeRecipientFromQr(input: string) {
+  const trimmed = (input || "").trim();
+  if (!trimmed) return "";
+
+  // ethereum:0x... / solana:... / tron:...
+  const parts = trimmed.split(":");
+  const last = parts.length > 1 ? parts[parts.length - 1] : trimmed;
+
+  // remove query params
+  const noQuery = last.split("?")[0];
+  return noQuery.trim();
 }
 
 /* ============ الأنماط ============ */

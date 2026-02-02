@@ -16,6 +16,7 @@
       "bundleIdentifier": "com.yousef.amanwallet",
       "buildNumber": "1",
       "infoPlist": {
+        "NSCameraUsageDescription": "نحتاج هذا الإذن لمسح رمز QR لإرسال العملات.",
         "NSPhotoLibraryAddUsageDescription": "نحتاج هذا الإذن لحفظ رمز الاستلام (QR) في الأستديو.",
         "NSFaceIDUsageDescription": "نحتاج Face ID للسماح بتسجيل الدخول السريع إلى المحفظة.",
         "ITSAppUsesNonExemptEncryption": false
@@ -27,7 +28,11 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#FFFFFF"
-      }
+      },
+      "permissions": [
+        "CAMERA",
+        "CAMERA"
+      ]
     },
     "plugins": [
       "expo-secure-store",
@@ -39,6 +44,9 @@
         "projectId": "55ccd51e-ab53-4aed-9d5a-b93f1bcc4af5"
       }
     },
-    "owner": "aman-wallet"
+    "owner": "aman-wallet",
+    "updates": {
+      "url": "https://u.expo.dev/55ccd51e-ab53-4aed-9d5a-b93f1bcc4af5"
+    }
   }
 }
