@@ -2,8 +2,7 @@
 import 'react-native-get-random-values';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
-  View, Text, TextInput, TouchableOpacity, Alert,
-  StyleSheet, ScrollView, ActivityIndicator
+  View, Text, TextInput, TouchableOpacity, Alert, StyleSheet, ScrollView, ActivityIndicator
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRoute, useNavigation } from '@react-navigation/native';
