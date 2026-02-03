@@ -32,7 +32,6 @@ import BNB from "./currencies/BNB";
 import MATIC from "./currencies/MATIC";
 import SOL from "./currencies/SOL";
 import TRX from "./currencies/TRX";
-import SUI from "./currencies/SUI";
 
 // العملات المستقرة
 import USDC from "./currencies/USDC";
@@ -43,19 +42,11 @@ import USDT_TRX from "./currencies/USDT_TRX";
 import USDT_BEP20 from "./currencies/USDT_BEP20"; // تمت الإضافة
 
 // العملات الأخرى
-import SHIB from "./currencies/SHIB";
 import ARB from "./currencies/ARB";
 import ARB_ETH from "./currencies/ARB_ETH";
 import ETH_ARB from "./currencies/ETH_ARB";
 import XRP from "./currencies/XRP";
-import LINK from "./currencies/LINK";
-
-// العملات المضافة حديثاً
-import LIGHT_BEP20 from "./currencies/LIGHT_BEP20";
-import SOMI_ERC20 from "./currencies/SOMI_ERC20";
-import SOMI_BASE from "./currencies/SOMI_BASE";
 import ETH_BASE from "./currencies/ETH_BASE";
-import ASTER_BEP20 from "./currencies/ASTER_BEP20";
 
 export type RootStackParamList = {
   // شاشات المصادقة
@@ -78,7 +69,6 @@ export type RootStackParamList = {
   MATIC: undefined;
   SOL: undefined;
   TRX: undefined;
-  SUI: undefined;
   
   // العملات المستقرة
   USDC: undefined;
@@ -89,19 +79,13 @@ export type RootStackParamList = {
   USDT_BEP20: undefined; // تمت الإضافة
   
   // العملات الأخرى
-  SHIB: undefined;
   ARB: undefined;
   ARB_ETH: undefined;
   ETH_ARB: undefined;
   XRP: undefined;
-  LINK: undefined;
   
   // العملات المضافة حديثاً
-  LIGHT_BEP20: undefined;
-  SOMI_ERC20: undefined;
-  SOMI_BASE: undefined;
   ETH_BASE: undefined;
-  ASTER_BEP20: undefined;
 };
 
 const Stack = createStackNavigator<RootStackParamList>();
@@ -226,7 +210,6 @@ function RootNavigator() {
       <Stack.Screen name="MATIC" component={MATIC} options={{ headerShown: false }} />
       <Stack.Screen name="SOL" component={SOL} options={{ headerShown: false }} />
       <Stack.Screen name="TRX" component={TRX} options={{ headerShown: false }} />
-      <Stack.Screen name="SUI" component={SUI} options={{ headerShown: false }} />
 
       {/* العملات المستقرة */}
       <Stack.Screen name="USDC" component={USDC} options={{ headerShown: false }} />
@@ -237,19 +220,13 @@ function RootNavigator() {
       <Stack.Screen name="USDT_BEP20" component={USDT_BEP20} options={{ headerShown: false }} />
 
       {/* العملات الأخرى */}
-      <Stack.Screen name="SHIB" component={SHIB} options={{ headerShown: false }} />
       <Stack.Screen name="ARB" component={ARB} options={{ headerShown: false }} />
       <Stack.Screen name="ARB_ETH" component={ARB_ETH} options={{ headerShown: false }} />
       <Stack.Screen name="ETH_ARB" component={ETH_ARB} options={{ headerShown: false }} />
       <Stack.Screen name="XRP" component={XRP} options={{ headerShown: false }} />
-      <Stack.Screen name="LINK" component={LINK} options={{ headerShown: false }} />
 
       {/* العملات المضافة حديثاً */}
-      <Stack.Screen name="LIGHT_BEP20" component={LIGHT_BEP20} options={{ headerShown: false }} />
-      <Stack.Screen name="SOMI_ERC20" component={SOMI_ERC20} options={{ headerShown: false }} />
-      <Stack.Screen name="SOMI_BASE" component={SOMI_BASE} options={{ headerShown: false }} />
       <Stack.Screen name="ETH_BASE" component={ETH_BASE} options={{ headerShown: false }} />
-      <Stack.Screen name="ASTER_BEP20" component={ASTER_BEP20} options={{ headerShown: false }} />
     </Stack.Navigator>
   );
 }

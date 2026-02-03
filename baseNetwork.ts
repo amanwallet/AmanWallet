@@ -14,7 +14,3 @@ export const baseExplorer = {
   address: (addr: string) => `https://basescan.org/address/${addr}`,
   token: (addr: string) => `https://basescan.org/token/${addr}`,
 };
-
-// (اختياري) عقد SOMI على Base لمن يحتاجه لاحقًا
-export const SOMI_BASE_ADDRESS =
-  "0x47636b3188774a3E7273D85A537b9bA4Ee7b2535";

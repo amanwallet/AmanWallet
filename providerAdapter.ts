@@ -96,51 +96,16 @@ export async function sendERC20(params: {
   return tx.hash!;
 }
 
-// إضافة دوال LINK ERC-20
-const LINK_ETH_ADDRESS = "0x514910771AF9Ca656af840dff83E8264EcF986CA";
-
-export function getERC20Balance_LINK(holder: string): Promise<string> {
-  return getERC20Balance({
-    chain: "ethereum",
-    holder,
-    token: LINK_ETH_ADDRESS,
-    decimals: 18,
-  });
-}
-
-export function sendLINK(privateKey: string, to: string, amount: string): Promise<string> {
-  return sendERC20({
-    chain: "ethereum",
-    privateKey,
-    token: LINK_ETH_ADDRESS,
-    to,
-    amount,
-    decimals: 18,
-  });
-}
-
 // ------------------
-// BITCOIN SUPPORT
+// BITCOIN SUPPORT - الإصدار المصحح
 // ------------------
-const BTC_RPC = Abe.getRpc('btc');
 
 /**
- * Get BTC balance (in BTC units)
+ * Get BTC balance (in BTC units) - الإصدار المصحح باستخدام REST API
  */
 export async function getBTCBalance(address: string): Promise<string> {
-  try {
-    const res = await axios.post(BTC_RPC, {
-      jsonrpc: "2.0",
-      id: 1,
-      method: "getBalance",
-      params: [address],
-    });
-    const satoshis = res.data?.result?.balance || 0;
-    return (Number(satoshis) / 1e8).toFixed(8);
-  } catch (error) {
-    console.error('BTC balance fetch failed:', error);
-    return "0.00000000";
-  }
+  // استخدم الدالة من btcProvider التي تستخدم REST API
+  return getBTCBalanceCompat(address);
 }
 
 /**
@@ -235,21 +200,6 @@ export async function sendXRP(params: {
 }
 
 // ------------------
-// LINK ERC-20 SUPPORT
-// ------------------
-export async function getLINKBalance(address: string): Promise<string> {
-  return getERC20Balance_LINK(address);
-}
-
-export async function sendLINKBalance(params: {
-  privateKey: string;
-  to: string;
-  amount: string;
-}): Promise<string> {
-  return sendLINK(params.privateKey, params.to, params.amount);
-}
-
-// ------------------
 // دوال مساعدة للتخزين (مطلوبة لـ ensureXRPKeys)
 async function getItem(key: string): Promise<string | null> {
   try {
@@ -315,10 +265,8 @@ export default {
   sendNative,
   getERC20Balance,
   sendERC20,
-  getERC20Balance_LINK,
-  sendLINK,
   
-  // Bitcoin Functions
+  // Bitcoin Functions - الإصدار المصحح
   getBTCBalance,
   sendBTCFromWIF,
   
@@ -326,10 +274,6 @@ export default {
   ensureXRPKeys,
   getXRPBalance,
   sendXRP,
-  
-  // LINK Functions
-  getLINKBalance,
-  sendLINKBalance,
   
   // دوال إضافية
   getEvmBalance,

@@ -1,4 +1,4 @@
-// walletUtils.ts - الدوال المشتركة للمحافظ (بدون SEI و XLM)
+// walletUtils.ts - الدوال المشتركة للمحافظ (بدون SEI و XLM و SUI)
 import * as SecureStore from 'expo-secure-store';
 import { ethers } from 'ethers';
 import * as secp from '@noble/secp256k1';
@@ -16,9 +16,6 @@ import { privateKeyToTronAddress } from './tronHub';
 
 // XRPL
 import { Wallet as XRPLWallet } from 'xrpl';
-
-// SUI
-import { suiAddressFromMnemonic } from './SUI';
 
 /* ===== تنظيف وتوحيد العبارة السرية ===== */
 export const normalizeMnemonic = (m: string): string => {
@@ -101,16 +98,6 @@ export async function persistAllFromMnemonic(mnemonic: string) {
     console.warn('⚠️ BTC persist failed:', String(e));
   }
 
-  // SUI
-  try {
-    const suiAddr = await suiAddressFromMnemonic(m);
-    console.log('📍 SUI Address Generated:', suiAddr);
-    await SecureStore.setItemAsync('sui_address', suiAddr);
-    console.log('💾 SUI address saved successfully');
-  } catch (e) {
-    console.warn('SUI persist failed:', String(e));
-  }
-
   // SOL
   const seed = mnemonicToSeedSync(m);
   const solSeed = slip10Derive(seed);
@@ -168,16 +155,22 @@ export async function persistAllFromMnemonic(mnemonic: string) {
     console.warn('XRP derive failed', String(e)); 
   }
 
-  // تنظيف أي بيانات مخزنة سابقة لـ SEI و XLM
+  // تنظيف أي بيانات مخزنة سابقة لـ SEI و XLM و SUI
   await cleanupRemovedAssets();
 
-  // تهيئة ألوان الشبكات (بدون SEI و XLM)
+  // تهيئة ألوان الشبكات (بدون SEI و XLM و SUI)
   await ensureNetColorsInitialized();
 }
 
 /* ===== تنظيف البيانات المخزنة للعملات المحذوفة ===== */
 async function cleanupRemovedAssets() {
-  const removedAssets = ['sei_privateKey', 'sei_address', 'xlm_address', 'xlm_secret'];
+  const removedAssets = [
+    'sei_privateKey', 
+    'sei_address', 
+    'xlm_address', 
+    'xlm_secret',
+    'sui_address' // تمت إضافة SUI
+  ];
   
   for (const key of removedAssets) {
     try {
@@ -189,16 +182,17 @@ async function cleanupRemovedAssets() {
   }
 }
 
-/* ===== تهيئة ألوان الشبكات (بدون SEI و XLM) ===== */
+/* ===== تهيئة ألوان الشبكات (بدون SEI و XLM و SUI) ===== */
 async function ensureNetColorsInitialized() {
   const KEY = "net_colors_v1";
   try {
     const existing = await SecureStore.getItemAsync(KEY);
     if (existing) {
-      // تحديث الخريطة الموجودة بإزالة SEI و XLM
+      // تحديث الخريطة الموجودة بإزالة SEI و XLM و SUI
       const map = JSON.parse(existing);
       delete map.sei;
       delete map.xlm;
+      delete map.sui;
       await SecureStore.setItemAsync(KEY, JSON.stringify(map));
       return;
     }
@@ -212,7 +206,7 @@ async function ensureNetColorsInitialized() {
       arbitrum:{ badge:"#2f6feb", bg:"#2f6feb22" },
       xrp:{ badge:"#00aae4", bg:"#00aae422" },
       tron:{ badge:"#E51A2E", bg:"#E51A2E22" },
-      sui:{ badge:"#6fbcf0", bg:"#6fbcf022" },
+      // تم إزالة SUI
     };
     await SecureStore.setItemAsync(KEY, JSON.stringify(map));
   } catch (e) {
@@ -220,7 +214,7 @@ async function ensureNetColorsInitialized() {
   }
 }
 
-/* ===== الحصول على قائمة الشبكات المدعومة (بدون SEI و XLM) ===== */
+/* ===== الحصول على قائمة الشبكات المدعومة (بدون SEI و XLM و SUI) ===== */
 export function getSupportedNetworks() {
   return [
     { id: 'bitcoin', name: 'Bitcoin', symbol: 'BTC' },
@@ -230,7 +224,7 @@ export function getSupportedNetworks() {
     { id: 'solana', name: 'Solana', symbol: 'SOL' },
     { id: 'arbitrum', name: 'Arbitrum', symbol: 'ETH' },
     { id: 'xrp', name: 'XRP Ledger', symbol: 'XRP' },
-    { id: 'tron', name: 'TRON', symbol: 'TRX' },
-    { id: 'sui', name: 'Sui', symbol: 'SUI' }
+    { id: 'tron', name: 'TRON', symbol: 'TRX' }
+    // تم إزالة SUI
   ];
 }

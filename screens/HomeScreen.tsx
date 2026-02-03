@@ -80,15 +80,9 @@ const localIcon = (sym: string) => {
       case "SOL": return require("../assets/sol.png");
       case "USDC": return require("../assets/usdc.png");
       case "USDT": return require("../assets/usdt.png");
-      case "SHIB": return require("../assets/shib.png");
       case "ARB": return require("../assets/arb.png");
-      case "LINK": return require("../assets/link.png");
       case "XRP": return require("../assets/xrp.png");
       case "TRX": return require("../assets/trx.png");
-      case "LIGHT": return require("../assets/light.png");
-      case "SOMI": return require("../assets/somi.png");
-      case "SUI": return require("../assets/sol.png");
-      case "ASTER": return require("../assets/aster.png");
       default: return null;
     }
   } catch { return null; }
@@ -105,7 +99,6 @@ const CHAIN_ALIASES: Record<string, string> = {
   base: "base",
   xrpl: "xrpl",
   tron: "tron",
-  sui: "sui",
 };
 
 const normalizeChain = (n: string): string => CHAIN_ALIASES[n?.toLowerCase()] || n?.toLowerCase();
@@ -119,7 +112,6 @@ const SYMBOL_ALIASES: Record<string, string[]> = {
   "usdc@ethereum": ["USDC"],
   "usdt@ethereum": ["USDT", "USDTE"],
   "usdt@bsc": ["USDT"], // تمت الإضافة
-  "shib@ethereum": ["SHIB", "SHIBA"],
   "usdc@polygon": ["USDC", "USDCe"],
   "usdt@polygon": ["USDT"],
   "usdt@tron": ["USDT"],
@@ -127,14 +119,8 @@ const SYMBOL_ALIASES: Record<string, string[]> = {
   "eth@arbitrum": ["ETH", "WETH"],
   "arb@ethereum": ["ARB"],
   "eth@base": ["ETH", "WETH"],
-  "link@ethereum": ["LINK"],
   "xrp@xrpl": ["XRP"],
   "trx@tron": ["TRX"],
-  "light@bsc": ["LIGHT"],
-  "somi@ethereum": ["SOMI"],
-  "somi@base": ["SOMI"],
-  "sui@sui": ["SUI"],
-  "aster@bsc": ["ASTER"],
 };
 
 const priceFromAsset = (a: AnkrAsset): number => {
@@ -147,12 +133,12 @@ const priceFromAsset = (a: AnkrAsset): number => {
 /* ================= Order Configuration ================= */
 const SYMBOL_ORDER: Record<string, number> = {
   USDC: 1, USDT: 2, ETH: 3, BTC: 4, BNB: 5, MATIC: 6, SOL: 7,
-  ARB: 8, SHIB: 9, LINK: 10, XRP: 11, TRX: 12, LIGHT: 13, SOMI: 14, SUI: 15, ASTER: 16,
+  ARB: 8, XRP: 9, TRX: 10,
 };
 
 const NETWORK_ORDER: Record<string, number> = {
   Ethereum: 1, Polygon: 2, "Arbitrum One": 3, BSC: 4, Solana: 5,
-  Bitcoin: 6, Tron: 7, Base: 8, XRPL: 9, SUI: 10,
+  Bitcoin: 6, Tron: 7, Base: 8, XRPL: 9,
 };
 
 /* ================= Main Component ================= */
@@ -174,7 +160,6 @@ export default function HomeScreen({ navigation }: any) {
     base: "Base",
     xrpl: "XRPL",
     tron: "Tron",
-    sui: "SUI",
   };
 
   const buildCoins = (): TokenDef[] => ([
@@ -204,28 +189,14 @@ export default function HomeScreen({ navigation }: any) {
       network:{label:"Polygon", emoji:"🟣", color:"#8247E5"}, priceKey:"matic@polygon", screen:"MATIC", balanceKey:"MATIC", sortOrder: 10, priceChange24h: -0.32 },
     { symbol:"SOL", name:"Solana", icon:localIcon("SOL")||require("../assets/sol.png"),
       network:{label:"Solana", emoji:"🟦", color:"#14F195"}, priceKey:"sol@solana", screen:"SOL", balanceKey:"SOL", sortOrder: 11, priceChange24h: 3.21 },
-    { symbol:"SHIB", name:"Shiba Inu", icon:localIcon("SHIB")||require("../assets/shib.png"),
-      network:{label:"ERC20", emoji:"🔷", color:"#E74C3C"}, priceKey:"shib@ethereum", screen:"SHIB", balanceKey:"SHIB", sortOrder: 12, priceChange24h: -2.15 },
     { symbol:"ARB", name:"Arbitrum", icon:localIcon("ARB") || require("../assets/arb.png"),
-      network:{ label:"Arbitrum", emoji:"🟦", color:"#2f6feb" }, priceKey:"arb@arbitrum", screen:"ARB", balanceKey:"ARB", sortOrder: 13, priceChange24h: 0.92 },
+      network:{ label:"Arbitrum", emoji:"🟦", color:"#2f6feb" }, priceKey:"arb@arbitrum", screen:"ARB", balanceKey:"ARB", sortOrder: 12, priceChange24h: 0.92 },
     { symbol:"ARB", name:"Arbitrum", icon:localIcon("ARB") || require("../assets/arb.png"),
-      network:{ label:"ERC20", emoji:"🔷", color:"#627EEA" }, priceKey:"arb@ethereum", screen:"ARB_ETH", balanceKey:"ARB_ETH", sortOrder: 14, priceChange24h: 0.89 },
-    { symbol:"LINK", name:"Chainlink", icon:localIcon("LINK")||require("../assets/link.png"),
-      network:{label:"ERC20", emoji:"🔷", color:"#2A5ADA"}, priceKey:"link@ethereum", screen:"LINK", balanceKey:"LINK_ERC20", sortOrder: 15, priceChange24h: 1.23 },
+      network:{ label:"ERC20", emoji:"🔷", color:"#627EEA" }, priceKey:"arb@ethereum", screen:"ARB_ETH", balanceKey:"ARB_ETH", sortOrder: 13, priceChange24h: 0.89 },
     { symbol:"XRP", name:"Ripple", icon:localIcon("XRP")||require("../assets/xrp.png"),
-      network:{label:"XRPL", emoji:"🌀", color:"#00AAE4"}, priceKey:"xrp@xrpl", screen:"XRP", balanceKey:"XRP", sortOrder: 16, priceChange24h: -0.45 },
+      network:{label:"XRPL", emoji:"🌀", color:"#00AAE4"}, priceKey:"xrp@xrpl", screen:"XRP", balanceKey:"XRP", sortOrder: 14, priceChange24h: -0.45 },
     { symbol:"TRX", name:"TRON", icon:localIcon("TRX")||require("../assets/trx.png"),
-      network:{label:"TRON", emoji:"🔴", color:"#E51A2E"}, priceKey:"trx@tron", screen:"TRX", balanceKey:"TRX", sortOrder: 17, priceChange24h: -0.15 },
-    { symbol:"LIGHT", name:"Light", icon: require("../assets/light.png"),
-      network:{ label: "BSC", emoji:"🟡", color:"#F0B90B" }, priceKey:"light@bsc", screen:"LIGHT_BEP20", balanceKey:"LIGHT", sortOrder: 18, priceChange24h: 5.67 },
-    { symbol:"SOMI", name:"SOMI", icon: require("../assets/somi.png"),
-      network:{ label: "ERC20", emoji:"🔷", color:"#627EEA" }, priceKey:"somi@ethereum", screen:"SOMI_ERC20", balanceKey:"SOMI", sortOrder: 19, priceChange24h: -3.42 },
-    { symbol:"SOMI", name:"SOMI", icon: require("../assets/somi.png"),
-      network:{ label: "Base", emoji:"🟦", color:"#0052FF" }, priceKey:"somi@base", screen:"SOMI_BASE", balanceKey:"SOMI_BASE", sortOrder: 20, priceChange24h: -3.38 },
-    { symbol:"SUI", name:"SUI", icon:localIcon("SUI")||require("../assets/sol.png"),
-      network:{label:"SUI", emoji:"💠", color:"#6B31D6"}, priceKey:"sui@sui", screen:"SUI", balanceKey:"SUI", sortOrder: 21, priceChange24h: 2.76 },
-    { symbol:"ASTER", name:"ASTER", icon: require("../assets/aster.png"),
-      network:{ label:"BSC", emoji:"🟡", color:"#F0B90B" }, priceKey:"aster@bsc", screen:"ASTER_BEP20", balanceKey:"ASTER", sortOrder: 22, priceChange24h: 8.91 },
+      network:{label:"TRON", emoji:"🔴", color:"#E51A2E"}, priceKey:"trx@tron", screen:"TRX", balanceKey:"TRX", sortOrder: 15, priceChange24h: -0.15 },
   ]);
 
   const [walletName, setWalletName] = useState("MultiVault");
@@ -269,8 +240,7 @@ export default function HomeScreen({ navigation }: any) {
         const btcAddr = await SecureStore.getItemAsync("btc_address");
         const xrpAddr = await SecureStore.getItemAsync("xrp_address");
         const tronAddr = await SecureStore.getItemAsync("tron_address");
-        const suiAddr = await SecureStore.getItemAsync("sui_address");
-        if (pk || solSecret || btcAddr || xrpAddr || tronAddr || suiAddr) { await onReady(); return; }
+        if (pk || solSecret || btcAddr || xrpAddr || tronAddr) { await onReady(); return; }
       } catch {}
       await new Promise(r => setTimeout(r, intervalMs));
     }
@@ -300,14 +270,6 @@ export default function HomeScreen({ navigation }: any) {
     return cached ?? null;
   }
 
-  async function getLinkPriceUSD(cached?: number): Promise<number | null> {
-    try {
-      const r = await withTimeout(fetch(PRICE_PROVIDERS.coingecko.linkUsd));
-      if (r.ok) { const j = await r.json(); const p = j?.chainlink?.usd; if (p != null && isFinite(Number(p))) return Number(p); }
-    } catch {}
-    return cached ?? null;
-  }
-
   async function getXrpPriceUSD(cached?: number): Promise<number | null> {
     try {
       const r = await withTimeout(fetch(PRICE_PROVIDERS.coingecko.xrpUsd));
@@ -324,86 +286,6 @@ export default function HomeScreen({ navigation }: any) {
     return cached ?? null;
   }
 
-  async function getLightPriceUSD(cached?: number): Promise<number | null> {
-    try {
-      const r = await withTimeout(fetch(PRICE_PROVIDERS.coingecko.lightUsd));
-      if (r.ok) { const j = await r.json(); const p = j?.light?.usd; if (p != null && isFinite(Number(p))) return Number(p); }
-    } catch {}
-    return cached ?? null;
-  }
-
-  async function getSomiPriceUSD(cached?: number): Promise<number | null> {
-    try {
-      const r = await withTimeout(fetch(PRICE_PROVIDERS.coingecko.somiUsd));
-      if (r.ok) {
-        const j = await r.json();
-        const p = j?.somnia?.usd;
-        if (p != null && isFinite(Number(p))) return Number(p);
-      }
-    } catch {}
-    return cached ?? null;
-  }
-
-  async function getSuiPriceUSD(cached?: number): Promise<number | null> {
-    try {
-      const r = await withTimeout(fetch("https://api.coingecko.com/api/v3/simple/price?ids=sui&vs_currencies=usd"));
-      if (r.ok) { 
-        const j = await r.json(); 
-        const p = j?.sui?.usd; 
-        if (p != null && isFinite(Number(p))) return Number(p); 
-      }
-    } catch {}
-    return cached ?? null;
-  }
-
-  async function getAsterPriceUSD(cached?: number): Promise<number | null> {
-    try {
-      const r = await withTimeout(fetch("https://api.coingecko.com/api/v3/simple/price?ids=aster&vs_currencies=usd"));
-      if (r.ok) { 
-        const j = await r.json(); 
-        console.log("📊 استجابة CoinGecko لـ ASTER:", JSON.stringify(j));
-        
-        const p = j?.aster?.usd; 
-        if (p != null && isFinite(Number(p)) && Number(p) > 0) {
-          console.log("✅ سعر ASTER من CoinGecko:", p);
-          return Number(p);
-        }
-      }
-      
-      console.log("🔄 جرب مصادر بديلة لسعر ASTER...");
-      
-      try {
-        const dexR = await withTimeout(fetch("https://api.dexscreener.com/latest/dex/search?q=ASTER"));
-        if (dexR.ok) {
-          const dexJ = await dexR.json();
-          console.log("📊 استجابة DexScreener:", JSON.stringify(dexJ).substring(0, 200));
-          
-          if (dexJ?.pairs && dexJ.pairs.length > 0) {
-            const pair = dexJ.pairs.find((p: any) => 
-              p.baseToken?.symbol === "ASTER" || 
-              p.baseToken?.name === "ASTER"
-            );
-            if (pair?.priceUsd) {
-              const price = Number(pair.priceUsd);
-              if (price > 0) {
-                console.log("✅ سعر ASTER من DexScreener:", price);
-                return price;
-              }
-            }
-          }
-        }
-      } catch (dexErr) {
-        console.log("❌ فشل جلب السعر من DexScreener:", dexErr);
-      }
-      
-      console.log("🔄 استخدام السعر المخزن لـ ASTER:", cached);
-      return cached ?? null;
-    } catch (error) {
-      console.log("❌ خطأ في جلب سعر ASTER:", error);
-      return cached ?? null;
-    }
-  }
-
   /* ================= Main Data Fetching Function ================= */
   const fetchAll = async () => {
     try {
@@ -414,11 +296,10 @@ export default function HomeScreen({ navigation }: any) {
       const btcAddr    = await SecureStore.getItemAsync("btc_address");
       const xrpAddr    = await SecureStore.getItemAsync("xrp_address");
       const tronAddr   = await SecureStore.getItemAsync("tron_address");
-      const suiAddr    = await SecureStore.getItemAsync("sui_address");
       const evmAddr = privateKey ? new ethers.Wallet(privateKey).address : undefined;
       const solAddr = solSecret ? solAddressFromSecret(solSecret) : undefined;
 
-      if (!evmAddr && !solAddr && !btcAddr && !xrpAddr && !tronAddr && !suiAddr) { 
+      if (!evmAddr && !solAddr && !btcAddr && !xrpAddr && !tronAddr) { 
         setRefreshing(false); 
         return; 
       }
@@ -659,41 +540,6 @@ export default function HomeScreen({ navigation }: any) {
         console.warn("USDT_TRON balance error:", err);
       }
 
-      // LINK
-      try {
-        let cachedLink: number | undefined;
-        try {
-          const raw = await SecureStore.getItemAsync(KEY_LAST_PRICES);
-          if (raw) { 
-            const obj = JSON.parse(raw); 
-            const v = obj?.prices?.["link@ethereum"]; 
-            if (typeof v === "number") cachedLink = v; 
-          }
-        } catch {}
-
-        let linkPx = prices["link@ethereum"];
-        if (linkPx == null || linkPx === 0) {
-          const p = await getLinkPriceUSD(cachedLink);
-          if (p != null) {
-            linkPx = p; 
-            nextP["link@ethereum"] = p;
-            try {
-              const raw = await SecureStore.getItemAsync(KEY_LAST_PRICES);
-              const cached = raw ? JSON.parse(raw) : { ts: Date.now(), prices: {} as PricesMap };
-              cached.prices["link@ethereum"] = p; 
-              cached.ts = Date.now();
-              await SecureStore.setItemAsync(KEY_LAST_PRICES, JSON.stringify(cached));
-            } catch {}
-          } else if (cachedLink != null) {
-            nextP["link@ethereum"] = cachedLink;
-          }
-        } else {
-          nextP["link@ethereum"] = linkPx;
-        }
-      } catch (e) { 
-        console.warn("LINK price error", e); 
-      }
-
       // XRP
       try {
         let cachedXrp: number | undefined;
@@ -727,182 +573,6 @@ export default function HomeScreen({ navigation }: any) {
         }
       } catch (e) { 
         console.warn("XRP price error", e); 
-      }
-
-      // LIGHT
-      try {
-        let cachedLight: number | undefined;
-        try {
-          const raw = await SecureStore.getItemAsync(KEY_LAST_PRICES);
-          if (raw) { 
-            const obj = JSON.parse(raw); 
-            const v = obj?.prices?.["light@bsc"]; 
-            if (typeof v === "number") cachedLight = v; 
-          }
-        } catch {}
-
-        let lightPx = prices["light@bsc"];
-        if (lightPx == null || lightPx === 0) {
-          const p = await getLightPriceUSD(cachedLight);
-          if (p != null) {
-            lightPx = p; 
-            nextP["light@bsc"] = p;
-            try {
-              const raw = await SecureStore.getItemAsync(KEY_LAST_PRICES);
-              const cached = raw ? JSON.parse(raw) : { ts: Date.now(), prices: {} as PricesMap };
-              cached.prices["light@bsc"] = p; 
-              cached.ts = Date.now();
-              await SecureStore.setItemAsync(KEY_LAST_PRICES, JSON.stringify(cached));
-            } catch {}
-          } else if (cachedLight != null) {
-            nextP["light@bsc"] = cachedLight;
-          }
-        } else {
-          nextP["light@bsc"] = lightPx;
-        }
-      } catch (e) { 
-        console.warn("LIGHT price error", e); 
-      }
-
-      // SOMI (Ethereum + Base)
-      try {
-        let cachedSomi: number | undefined;
-        try {
-          const raw = await SecureStore.getItemAsync(KEY_LAST_PRICES);
-          if (raw) {
-            const obj = JSON.parse(raw);
-            const v = obj?.prices?.["somi@ethereum"];
-            if (typeof v === "number") cachedSomi = v;
-          }
-        } catch {}
-
-        let somiPx = prices["somi@ethereum"];
-        if (somiPx == null || somiPx === 0) {
-          const p = await getSomiPriceUSD(cachedSomi);
-          if (p != null) somiPx = p;
-        }
-        if (somiPx == null || somiPx === 0) somiPx = 0.52; // fallback
-
-        nextP["somi@ethereum"] = somiPx;
-        nextP["somi@base"] = somiPx;
-
-        // SOMI (ERC20) fallback manual balance when not available from Ankr
-        if (!nextB["SOMI"]) {
-          const rawBal = await SecureStore.getItemAsync("custom_somi_balance");
-          nextB["SOMI"] = rawBal ? parseFloat(rawBal).toFixed(6) : "0";
-        }
-
-        // Store both prices in cache
-        try {
-          const raw = await SecureStore.getItemAsync(KEY_LAST_PRICES);
-          const cached = raw ? JSON.parse(raw) : { ts: Date.now(), prices: {} as PricesMap };
-          cached.prices["somi@ethereum"] = somiPx;
-          cached.prices["somi@base"] = somiPx;
-          cached.ts = Date.now();
-          await SecureStore.setItemAsync(KEY_LAST_PRICES, JSON.stringify(cached));
-        } catch {}
-      } catch (e) { 
-        console.warn("SOMI price error", e); 
-      }
-
-      // ==== SUI ====
-      try {
-        const addr = await SecureStore.getItemAsync('sui_address');
-        if (addr) {
-          const { getSuiBalanceMist } = await import("../SUI");
-          const mist = await getSuiBalanceMist(addr);
-          const sui = (Number(mist || "0") / 1_000_000_000).toFixed(9);
-          nextB["SUI"] = sui;
-
-          let cachedSui: number | undefined;
-          try {
-            const raw = await SecureStore.getItemAsync(KEY_LAST_PRICES);
-            if (raw) {
-              const obj = JSON.parse(raw);
-              const v = obj?.prices?.["sui@sui"];
-              if (typeof v === "number") cachedSui = v;
-            }
-          } catch {}
-
-          let suiPx = prices["sui@sui"];
-
-          if (suiPx == null || suiPx === 0) {
-            const p = await getSuiPriceUSD(cachedSui);
-            if (p != null && p > 0) {
-              suiPx = p;
-              nextP["sui@sui"] = p;
-              try {
-                const raw = await SecureStore.getItemAsync(KEY_LAST_PRICES);
-                const cached = raw ? JSON.parse(raw) : { ts: Date.now(), prices: {} };
-                cached.prices["sui@sui"] = p;
-                cached.ts = Date.now();
-                await SecureStore.setItemAsync(KEY_LAST_PRICES, JSON.stringify(cached));
-              } catch {}
-            } else if (cachedSui != null && cachedSui > 0) {
-              nextP["sui@sui"] = cachedSui;
-            } else {
-              nextP["sui@sui"] = 1.20;
-            }
-          } else {
-            nextP["sui@sui"] = suiPx;
-          }
-        } else {
-          nextB["SUI"] = nextB["SUI"] ?? "0";
-        }
-      } catch (e) {
-        console.warn('SUI balance fetch failed:', String(e));
-        nextB["SUI"] = nextB["SUI"] ?? "0";
-      }
-
-      // ==== ASTER (BEP20) ====
-      try {
-        let cachedAster: number | undefined;
-        try {
-          const raw = await SecureStore.getItemAsync(KEY_LAST_PRICES);
-          if (raw) {
-            const obj = JSON.parse(raw);
-            const v = obj?.prices?.["aster@bsc"];
-            if (typeof v === "number") cachedAster = v;
-          }
-        } catch {}
-
-        let asterPx = prices["aster@bsc"];
-
-        if (asterPx == null || asterPx === 0) {
-          const p = await getAsterPriceUSD(cachedAster);
-          if (p != null && p > 0) {
-            asterPx = p;
-            nextP["aster@bsc"] = p;
-            console.log("✅ تم تعيين سعر ASTER الحي:", p);
-            
-            try {
-              const raw = await SecureStore.getItemAsync(KEY_LAST_PRICES);
-              const cached = raw ? JSON.parse(raw) : { ts: Date.now(), prices: {} };
-              cached.prices["aster@bsc"] = p;
-              cached.ts = Date.now();
-              await SecureStore.setItemAsync(KEY_LAST_PRICES, JSON.stringify(cached));
-            } catch {}
-          } else if (cachedAster != null && cachedAster > 0) {
-            nextP["aster@bsc"] = cachedAster;
-            console.log("✅ استخدام سعر ASTER المخزن:", cachedAster);
-          } else {
-            nextP["aster@bsc"] = 1.10;
-            console.log("⚠️ استخدام سعر ASTER الافتراضي: 1.10 USD");
-          }
-        } else {
-          nextP["aster@bsc"] = asterPx;
-          console.log("✅ استخدام سعر ASTER الحالي:", asterPx);
-        }
-
-        // ASTER balance fallback
-        if (!nextB["ASTER"]) {
-          const rawBal = await SecureStore.getItemAsync("custom_aster_balance");
-          nextB["ASTER"] = rawBal ? parseFloat(rawBal).toFixed(6) : "0";
-        }
-      } catch (e) {
-        console.warn('ASTER price/balance error:', String(e));
-        nextB["ASTER"] = nextB["ASTER"] ?? "0";
-        nextP["aster@bsc"] = 1.10;
       }
 
       // Fallback for stablecoins
@@ -1129,7 +799,7 @@ export default function HomeScreen({ navigation }: any) {
         <Text style={[
           styles.hideZeroText, 
           { color: colors.text },
-          rtl && styles.textRight
+            rtl && styles.textRight
         ]}>
           {t("home.hideZero")}
         </Text>
