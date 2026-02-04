@@ -1,4 +1,4 @@
-// PinEntryScreen.tsx - الإصدار المصحح مع تشخيص مشكلة ciphertext
+// PinEntryScreen.tsx - النسخة المعدلة
 import React, { useState } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity, Alert,
@@ -10,9 +10,13 @@ import { useTheme } from '../ThemeProvider';
 import * as SecureStore from 'expo-secure-store';
 import nacl from "tweetnacl";
 import * as Crypto from 'expo-crypto';
+import { Buffer } from "buffer"; // ✅ تم الإضافة
 
-// إعدادات API
-const API_BASE = __DEV__ ? "http://api.aman-wallet.com:3000" : "https://aman-wallet.com";
+// ✅ التعديل: تغيير اسم الدالة المستوردة لتجنب التعارض
+import { setPin as savePin } from './pinAuth';
+
+// ✅ إصلاح API_BASE
+const API_BASE = "https://aman-wallet.com";
 
 // دوائر المساعدة
 function encode(str: string) {
@@ -90,7 +94,7 @@ function validatePasswordStrength(password: string): { isValid: boolean; message
   return { isValid: true, message: 'Strong password' };
 }
 
-// 🔧 دالة التشفير المعدلة - بدون HMAC
+// دالة التشفير
 async function encryptWalletDataEnhanced(walletData: any, passwordStr: string) {
   const nonce = nacl.randomBytes(24);
   const salt = nacl.randomBytes(32);
@@ -99,7 +103,7 @@ async function encryptWalletDataEnhanced(walletData: any, passwordStr: string) {
   const ciphertext = nacl.secretbox(message, nonce, key);
   
   return {
-    version: "2.1", // 🔧 تعديل من 2.2 إلى 2.1 لتجنب مشكلة HMAC
+    version: "2.1",
     nonce: toB64(nonce),
     salt: toB64(salt),
     ciphertext: toB64(ciphertext),
@@ -133,8 +137,9 @@ export default function PinEntryScreen({ navigation, route }: any) {
   const { i18n } = useTranslation();
   const rtl = i18n.language.startsWith('ar');
   
-  const [pin, setPin] = useState('');
-  const [pin2, setPin2] = useState('');
+  // ✅ التعديل: تغيير أسماء state setters لتجنب التعارض
+  const [pin, setPinText] = useState('');
+  const [pin2, setPin2Text] = useState('');
   const [loading, setLoading] = useState(false);
   const [showBackup, setShowBackup] = useState(false);
   const [backupLoading, setBackupLoading] = useState(false);
@@ -203,7 +208,8 @@ export default function PinEntryScreen({ navigation, route }: any) {
     try {
       setLoading(true);
       
-      await SecureStore.setItemAsync('wallet_pin', pin);
+      // ✅ التعديل: استخدام savePin بدلاً من setPin
+      await savePin(pin);
       await SecureStore.setItemAsync('mnemonic', mnemonic);
       
       navigation.reset({
@@ -354,21 +360,10 @@ export default function PinEntryScreen({ navigation, route }: any) {
       const walletData = { mnemonic, createdAt: new Date().toISOString() };
       const encryptedData = await encryptWalletDataEnhanced(walletData, password);
 
-      // 🔧 تسجيل معلومات التشفير للتشخيص
-      console.log('🔐 Encrypted data details:', {
-        ciphertextLength: encryptedData.ciphertext.length,
-        ciphertextSample: encryptedData.ciphertext.substring(0, 30) + '...',
-        ciphertextEnd: encryptedData.ciphertext.substring(encryptedData.ciphertext.length - 10),
-        isBase64: /^[A-Za-z0-9+/=]+$/.test(encryptedData.ciphertext),
-        nonceLength: encryptedData.nonce.length,
-        saltLength: encryptedData.salt.length,
-        version: encryptedData.version
-      });
-
       setCurrentStep('Uploading data...');
       setUploadProgress(70);
 
-      // 🔧 تحضير البيانات للرفع مع تشخيص شامل
+      // تحضير البيانات للرفع
       const uploadData = {
         email: cleanEmail,
         ...encryptedData,
@@ -377,13 +372,6 @@ export default function PinEntryScreen({ navigation, route }: any) {
         algorithm: encryptedData.algorithm || "XSalsa20-Poly1305",
         securityLevel: "enhanced"
       };
-
-      console.log('📤 Upload data prepared:', {
-        email: cleanEmail,
-        backup_id: uploadData.backup_id,
-        grantLength: responseData.grant?.length,
-        dataKeys: Object.keys(uploadData)
-      });
 
       // رفع البيانات
       const uploadResponse = await fetch(`${API_BASE}/api/upload-backup`, {
@@ -395,12 +383,8 @@ export default function PinEntryScreen({ navigation, route }: any) {
         body: JSON.stringify(uploadData)
       });
 
-      // 🔧 معالجة رد السيرفر بشكل مفصل
       if (!uploadResponse.ok) {
         const errorText = await uploadResponse.text();
-        console.error('❌ Upload failed with status:', uploadResponse.status);
-        console.error('❌ Error response:', errorText);
-        
         let errorMessage = "Backup upload failed";
         try {
           const errorData = JSON.parse(errorText);
@@ -413,7 +397,6 @@ export default function PinEntryScreen({ navigation, route }: any) {
       }
 
       const result = await uploadResponse.json();
-      console.log('✅ Upload successful:', result);
 
       setCurrentStep('Completed successfully!');
       setUploadProgress(100);
@@ -422,9 +405,6 @@ export default function PinEntryScreen({ navigation, route }: any) {
       resetBackupProcess();
       
     } catch (error: any) {
-      console.error('❌ Backup upload failed:', error);
-      
-      // 🔧 رسالة خطأ مفصلة
       let errorMessage = error.message || TEXTS.backupFailed;
       if (errorMessage.includes('ciphertext')) {
         errorMessage = `${TEXTS.ciphertextIssue}: ${errorMessage}`;
@@ -504,7 +484,8 @@ export default function PinEntryScreen({ navigation, route }: any) {
             secureTextEntry
             maxLength={6}
             value={pin}
-            onChangeText={setPin}
+            // ✅ التعديل: استخدام setPinText بدلاً من setPin
+            onChangeText={setPinText}
           />
 
           {/* تأكيد PIN */}
@@ -524,7 +505,8 @@ export default function PinEntryScreen({ navigation, route }: any) {
             secureTextEntry
             maxLength={6}
             value={pin2}
-            onChangeText={setPin2}
+            // ✅ التعديل: استخدام setPin2Text بدلاً من setPin2
+            onChangeText={setPin2Text}
           />
 
           {/* زر تأكيد PIN */}

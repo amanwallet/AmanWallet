@@ -14,6 +14,8 @@ import {
   Animated,
   ScrollView,
   I18nManager,
+  InteractionManager, // ✅ تم الإضافة لتحسين الأداء
+  Vibration, // ✅ تم الإضافة
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as SecureStore from 'expo-secure-store';
@@ -22,6 +24,9 @@ import { useTheme } from '../ThemeProvider';
 import { useTranslation } from 'react-i18next';
 import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
+
+// ✅ استيراد دوال PIN الجديدة
+import { hasPin, verifyPin } from "./pinAuth";
 
 const { width, height } = Dimensions.get('window');
 const PIN_LENGTH = 6;
@@ -54,9 +59,10 @@ async function hasStoredWallet(): Promise<boolean> {
   const evmPk = await SecureStore.getItemAsync('privateKey');
   return !!evmPk;
 }
+
+// ✅ التعديل: استخدام دالة hasPin الجديدة
 async function hasSavedPin(): Promise<boolean> {
-  const pin = await SecureStore.getItemAsync('wallet_pin');
-  return !!pin && pin.length > 0;
+  return await hasPin();
 }
 
 /* ===================== Biometric helpers ===================== */
@@ -259,6 +265,7 @@ export default function EnterPinScreen({ navigation }: any) {
     ]).start();
   };
 
+  // ✅ التعديل: دالة onConfirm محسنة لمنع تجميد الواجهة
   const onConfirm = async () => {
     animateButton();
 
@@ -268,21 +275,36 @@ export default function EnterPinScreen({ navigation }: any) {
       return;
     }
 
-    const saved = await SecureStore.getItemAsync('wallet_pin');
-    if (pin === saved) {
-      await setPinState(0, 0);
-      navigation.replace('Home');
-    } else {
-      const { fails } = await getPinState();
-      const nextFails = fails + 1;
-      let lockUntil = 0;
-      if (nextFails >= 3) lockUntil = (await getNowMs()) + 30000;
-      await setPinState(nextFails, lockUntil);
+    // ✅ التعديل: إظهار اللودر فوراً
+    setBusy(true);
 
-      triggerShake();
-      Alert.alert(t('alerts.error'), t('alerts.pinWrongOld'));
-      setPin('');
-    }
+    // ✅ التعديل: استخدام InteractionManager لتأجيل العملية الثقيلة
+    InteractionManager.runAfterInteractions(async () => {
+      try {
+        // ✅ التعديل: استخدام دالة verifyPin الجديدة مع تقليل التكرارات
+        const ok = await verifyPin(pin);
+
+        if (ok) {
+          await setPinState(0, 0);
+          // ✅ التعديل: reset أفضل من replace حتى ما يصير رجوع/تذبذب
+          navigation.reset({ index: 0, routes: [{ name: 'Home' as never }] });
+          return;
+        }
+
+        const { fails } = await getPinState();
+        const nextFails = fails + 1;
+        let lockUntil = 0;
+        if (nextFails >= 3) lockUntil = (await getNowMs()) + 30000;
+        await setPinState(nextFails, lockUntil);
+
+        triggerShake();
+        Vibration.vibrate(100); // ✅ تم الإضافة
+        Alert.alert(t('alerts.error'), t('alerts.pinWrongOld'));
+        setPin('');
+      } finally {
+        setBusy(false);
+      }
+    });
   };
 
   const handleBiometricAuth = async () => {
@@ -392,10 +414,12 @@ export default function EnterPinScreen({ navigation }: any) {
                         opacity: isLocked ? 0.6 : pin.length === PIN_LENGTH ? 1 : 0.6,
                       },
                     ]}
-                    disabled={isLocked || pin.length !== PIN_LENGTH}
+                    disabled={isLocked || pin.length !== PIN_LENGTH || busy}
                   >
                     <View style={[styles.buttonContent, { flexDirection: rtl ? 'row-reverse' : 'row' }]}>
-                      {rtl ? (
+                      {busy ? (
+                        <ActivityIndicator color="#fff" size="small" />
+                      ) : rtl ? (
                         <>
                           <Ionicons name="arrow-back" size={20} color="#fff" />
                           <Text style={styles.confirmButtonText}>{t('enterPin.confirm')}</Text>
@@ -419,6 +443,7 @@ export default function EnterPinScreen({ navigation }: any) {
                         styles.biometricButton,
                         { borderColor: colors.primary + '40', backgroundColor: colors.primary + '10' },
                       ]}
+                      disabled={busy}
                     >
                       {busy ? (
                         <ActivityIndicator color={colors.primary} size="small" />
@@ -453,6 +478,7 @@ export default function EnterPinScreen({ navigation }: any) {
                 <TouchableOpacity
                   style={[styles.forgotContainer, { flexDirection: rtl ? 'row-reverse' : 'row' }]}
                   onPress={() => navigation.navigate('RecoveryHub')}
+                  disabled={busy}
                 >
                   <Ionicons name="help-circle-outline" size={18} color={colors.primary} />
                   <Text style={[styles.forgotText, { color: colors.primary, textAlign: rtl ? 'right' : 'left' }]}>

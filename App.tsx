@@ -12,6 +12,9 @@ import * as SecureStore from 'expo-secure-store';
 import { ThemeProvider } from "./ThemeProvider";
 import UpdateGate from "./UpdateGate";
 
+// ✅ استيراد دالة hasPin
+import { hasPin } from "./screens/pinAuth";
+
 // الشاشات الرئيسية
 import HomeScreen from "./screens/HomeScreen";
 import Settings from "./screens/Settings";
@@ -96,9 +99,9 @@ async function hasStoredWallet(): Promise<boolean> {
   return !!evmPk;
 }
 
+// ✅ التعديل: استخدام دالة hasPin الجديدة
 async function hasSavedPin(): Promise<boolean> {
-  const pin = await SecureStore.getItemAsync('wallet_pin');
-  return !!pin && pin.length > 0;
+  return await hasPin();
 }
 
 function RootNavigator() {

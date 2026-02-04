@@ -7,6 +7,9 @@ import TokenTemplate from "./TokenTemplate";
 import { getBalance, send, estimateNetworkFee } from "../tokenHub";
 import { NETWORKS } from "../providers";
 
+// ✅ استيراد دالة verifyPin
+import { verifyPin } from "../screens/pinAuth";
+
 const IDS = ["USDC@polygon", "USDCe@polygon"] as const;
 type Id = typeof IDS[number];
 
@@ -51,8 +54,11 @@ export default function USDC_Polygon({ navigation }: any) {
   const copy = async () => { if (!address) return; await Clipboard.setStringAsync(address); Alert.alert("تم النسخ", "تم نسخ عنوان المحفظة"); };
   const onSendWithResult = async () => {
     if (!active) throw new Error("لم يتم تحديد عقد USDC");
-    const savedPin = await SecureStore.getItemAsync("wallet_pin");
-    if (!savedPin || savedPin !== pin) throw new Error("الرقم السري غير صحيح");
+    
+    // ✅ التعديل: استخدام verifyPin بدلاً من المقارنة المباشرة
+    const ok = await verifyPin(pin);
+    if (!ok) throw new Error("الرقم السري غير صحيح");
+    
     const pk = await SecureStore.getItemAsync("privateKey"); if (!pk) throw new Error("لا يوجد مفتاح خاص");
     setSending(true);
     try {

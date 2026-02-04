@@ -7,6 +7,9 @@ import TokenTemplate from "./TokenTemplate";
 import { getBalance, send, estimateNetworkFee } from "../tokenHub";
 import { NETWORKS } from "../providers";
 
+// ✅ استيراد دالة verifyPin
+import { verifyPin } from "../screens/pinAuth";
+
 const TOKEN_ID = "USDT@polygon" as const;
 
 export default function USDT({ navigation }: any) {
@@ -42,8 +45,10 @@ export default function USDT({ navigation }: any) {
   const copy = async () => { if (!address) return; await Clipboard.setStringAsync(address); Alert.alert("تم النسخ", "تم نسخ عنوان المحفظة"); };
 
   const onSendWithResult = async () => {
-    const savedPin = await SecureStore.getItemAsync("wallet_pin");
-    if (!savedPin || savedPin !== pin) throw new Error("الرقم السري غير صحيح");
+    // ✅ التعديل: استخدام verifyPin بدلاً من المقارنة المباشرة
+    const ok = await verifyPin(pin);
+    if (!ok) throw new Error("الرقم السري غير صحيح");
+    
     const pk = await SecureStore.getItemAsync("privateKey"); if (!pk) throw new Error("لا يوجد مفتاح خاص");
     setSending(true);
     try {

@@ -6,6 +6,9 @@ import TokenTemplate from "./TokenTemplate";
 import { getBTCBalance, sendBTC } from "../providerAdapter";
 import { NETWORKS, EXPLORER_TX } from "../providers";
 
+// ✅ استيراد دالة verifyPin
+import { verifyPin } from "../screens/pinAuth";
+
 export default function BTC({ navigation }: any) {
   const [address, setAddress] = useState("");
   const [balance, setBalance] = useState("0.000000");
@@ -44,8 +47,9 @@ export default function BTC({ navigation }: any) {
   const onSendWithResult = async () => {
     if (!recipient || !amount) throw new Error("أدخل العنوان والمبلغ.");
     
-    const savedPin = await SecureStore.getItemAsync("wallet_pin");
-    if (pin !== savedPin) throw new Error("الرقم السري غير صحيح.");
+    // ✅ التعديل: استخدام verifyPin بدلاً من المقارنة المباشرة
+    const ok = await verifyPin(pin);
+    if (!ok) throw new Error("الرقم السري غير صحيح.");
     
     const btcWif = await SecureStore.getItemAsync("btc_wif");
     if (!btcWif) throw new Error("لا يوجد مفتاح BTC");

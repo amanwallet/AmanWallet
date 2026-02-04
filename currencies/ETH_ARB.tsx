@@ -7,6 +7,9 @@ import TokenTemplate from "./TokenTemplate";
 import { getNativeBalance, sendNativeTx, getProvider } from "../providerAdapter";
 import { NETWORKS, EXPLORER_TX } from "../providers";
 
+// ✅ استيراد دالة verifyPin
+import { verifyPin } from "../screens/pinAuth";
+
 export default function ETH_ARB({ navigation }: any) {
   const [balance, setBalance] = useState("0.000000"),
     [address, setAddress] = useState(""),
@@ -55,8 +58,10 @@ export default function ETH_ARB({ navigation }: any) {
   };
 
   const onSendWithResult = async () => {
-    const saved = await SecureStore.getItemAsync("wallet_pin");
-    if (saved !== pin) throw new Error("الرقم السري غير صحيح");
+    // ✅ التعديل: استخدام verifyPin بدلاً من المقارنة المباشرة
+    const ok = await verifyPin(pin);
+    if (!ok) throw new Error("الرقم السري غير صحيح");
+    
     const pk = await SecureStore.getItemAsync("privateKey");
     if (!pk) throw new Error("لا يوجد مفتاح خاص");
     setSending(true);

@@ -1,4 +1,4 @@
-// walletUtils.ts - الدوال المشتركة للمحافظ (بدون SEI و XLM و SUI)
+// walletUtils.ts - الدوال المشتركة للمحافظ (بدون SEI و XLM و SUI) - تم التعديل
 import * as SecureStore from 'expo-secure-store';
 import { ethers } from 'ethers';
 import * as secp from '@noble/secp256k1';
@@ -113,10 +113,10 @@ export async function persistAllFromMnemonic(mnemonic: string) {
     if (!tronPrivateKey) {
       console.warn('⚠️ TRON derive failed: privateKey missing — skipping TRON');
     } else {
-      console.log('🔑 TRON Private Key Derived:', tronPrivateKey);
+      // تم إزالة console.log الخطير هنا
       
       const tronAddress = privateKeyToTronAddress(tronPrivateKey);
-      console.log('📍 TRON Address Generated:', tronAddress);
+      // تم إزالة console.log الخطير هنا
       
       if (!tronAddress.startsWith('T') || tronAddress.length !== 34) {
         throw new Error(`عنوان TRON غير صالح: ${tronAddress}`);
@@ -124,7 +124,7 @@ export async function persistAllFromMnemonic(mnemonic: string) {
       
       await SecureStore.setItemAsync('tron_privateKey', tronPrivateKey);
       await SecureStore.setItemAsync('tron_address', tronAddress);
-      console.log('💾 TRON private key and address saved successfully');
+      // تم إزالة console.log الخطير هنا
     }
   } catch (e) {
     console.warn('❌ TRON derive failed', String(e));
@@ -136,7 +136,7 @@ export async function persistAllFromMnemonic(mnemonic: string) {
     const xrpWallet = XRPLWallet.fromMnemonic(m, { 
       derivationPath: "m/44'/144'/0'/0/0" 
     });
-    console.log('XRP Address Generated:', xrpWallet.address);
+    // تم إزالة console.log الخطير هنا
     
     if (!xrpWallet.address.startsWith('r') || xrpWallet.address.length < 25) {
       throw new Error('عنوان XRP غير صالح');
@@ -144,13 +144,12 @@ export async function persistAllFromMnemonic(mnemonic: string) {
     
     await SecureStore.setItemAsync('xrp_address', String(xrpWallet.address));
     
-    const secretToStore = 
-      typeof xrpWallet.seed === 'string' && xrpWallet.seed.length > 0
-        ? xrpWallet.seed
-        : m;
-    
-    await SecureStore.setItemAsync('xrp_secret', String(secretToStore));
-    console.log('XRP address and secret saved successfully');
+    // ✅ التصحيح الهام: إصلاح تخزين xrp_secret (آمن)
+    if (typeof xrpWallet.seed !== 'string' || xrpWallet.seed.length === 0) {
+      throw new Error('XRP seed missing — لن نخزن mnemonic داخل xrp_secret');
+    }
+    await SecureStore.setItemAsync('xrp_secret', xrpWallet.seed);
+    // تم إزالة console.log الخطير هنا
   } catch (e) { 
     console.warn('XRP derive failed', String(e)); 
   }

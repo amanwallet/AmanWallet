@@ -12,9 +12,11 @@ import {
   privateKeyToTronAddress
 } from "../tronHub";
 
+// ✅ استيراد دالة verifyPin
+import { verifyPin } from "../screens/pinAuth";
+
 const SYMBOL = "TRX";
 const KEY_ADDR = "tron_address";
-const KEY_PIN  = "wallet_pin";
 const KEY_PK   = "tron_privateKey";
 
 export default function TRX({ navigation }: any) {
@@ -52,17 +54,11 @@ export default function TRX({ navigation }: any) {
       // أولاً: جلب مفتاح TRON الخاص المخزن
       const tronPk = await SecureStore.getItemAsync(KEY_PK);
       if (tronPk) {
-        console.log('🔑 استخدام مفتاح TRON الخاص:', tronPk.substring(0, 16) + '...');
-        
         // التحقق من أن المفتاح يطابق العنوان المخزن
         const expectedAddress = privateKeyToTronAddress(tronPk);
         const storedAddress = await SecureStore.getItemAsync(KEY_ADDR);
         
         if (expectedAddress !== storedAddress) {
-          console.warn('⚠️ المفتاح لا يطابق العنوان المخزن:', {
-            expected: expectedAddress,
-            stored: storedAddress
-          });
           throw new Error('المفتاح الخاص لا يطابق عنوان TRON المخزن');
         }
         
@@ -71,7 +67,6 @@ export default function TRX({ navigation }: any) {
       
       throw new Error('لا يوجد مفتاح TRON خاص محفوظ');
     } catch (error) {
-      console.error('❌ خطأ في جلب المفتاح الخاص:', error);
       throw new Error('تعذر الوصول إلى المفتاح الخاص لـ TRON. يرجى استيراد المحفظة مرة أخرى.');
     }
   };
@@ -85,12 +80,6 @@ export default function TRX({ navigation }: any) {
       
       const expectedAddress = privateKeyToTronAddress(tronPk);
       
-      console.log('🔍 التحقق من المطابقة:', {
-        expectedAddress,
-        storedAddress: currentAddress,
-        match: expectedAddress === currentAddress
-      });
-      
       return expectedAddress === currentAddress;
     } catch {
       return false;
@@ -99,8 +88,9 @@ export default function TRX({ navigation }: any) {
 
   const onSendWithResult = async () => {
     try {
-      const savedPin = await SecureStore.getItemAsync(KEY_PIN);
-      if ((savedPin || "") !== pin) throw new Error("الرقم السري غير صحيح");
+      // ✅ التعديل: استخدام verifyPin بدلاً من المقارنة المباشرة
+      const ok = await verifyPin(pin);
+      if (!ok) throw new Error("الرقم السري غير صحيح");
       
       // التحقق من أن المفاتيح متطابقة
       const keysMatch = await verifyKeysMatch();
@@ -116,20 +106,12 @@ export default function TRX({ navigation }: any) {
       const from = normalizeTronAddress(address);
       const to   = normalizeTronAddress(recipient.trim());
       const amt  = amount.trim() || "0";
-
-      console.log('🚀 بدء إرسال TRX:', { 
-        from, 
-        to, 
-        amount: amt,
-        privateKeyLength: pk.length 
-      });
       
       // ✨ استدعاء الإرسال التلقائي (يبني + يوقّع + يبث)
       await sendTrxAuto(from, to, amt, pk.trim().replace(/^0x/, ""));
       alert("✅ تم إرسال TRX بنجاح!");
       setAmount(""); setPin(""); await refresh();
     } catch (e: any) {
-      console.error('❌ فشل إرسال TRX:', e.message);
       alert(e.message || "فشل الإرسال");
     } finally {
       setSending(false);

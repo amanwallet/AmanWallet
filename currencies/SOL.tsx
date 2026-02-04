@@ -9,6 +9,9 @@ import TokenTemplate from "./TokenTemplate";
 import { Connection, PublicKey, Keypair, LAMPORTS_PER_SOL, SystemProgram, Transaction } from "@solana/web3.js";
 import { solanaRpc, EXPLORER_TX } from "../providers";
 
+// ✅ استيراد دالة verifyPin
+import { verifyPin } from "../screens/pinAuth";
+
 const RPC_URL = solanaRpc();
 const MIN_FEE_SOL = 0.000005;
 
@@ -57,8 +60,10 @@ export default function SOL({ navigation }: any) {
   const sendAll = () => { const bal = parseFloat(balance || "0"); const max = Math.max(bal - MIN_FEE_SOL, 0); setAmount(max.toFixed(6)); };
 
   const onSendWithResult = async () => {
-    const savedPin = await SecureStore.getItemAsync("wallet_pin");
-    if (!savedPin || savedPin !== pin) throw new Error("الرقم السري غير صحيح.");
+    // ✅ التعديل: استخدام verifyPin بدلاً من المقارنة المباشرة
+    const ok = await verifyPin(pin);
+    if (!ok) throw new Error("الرقم السري غير صحيح.");
+    
     if (!secretB58) throw new Error("لا يوجد مفتاح سولانا محفوظ.");
     const secretRaw = bs58.decode(secretB58);
     const sender = Keypair.fromSecretKey(secretRaw);

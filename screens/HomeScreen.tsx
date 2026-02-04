@@ -17,6 +17,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { getBalance as getPolyTokenBalance } from "../tokenHub";
 import { ankrMulti, solanaRpc, btcBlockbook, PRICE_PROVIDERS } from "../providers";
 import { ANKR_RPC } from "../Abe";
+import { hasPin } from "./pinAuth"; // ✅ إضافة مهمة: للتحقق من وجود PIN
 
 /* ================= Constants ================= */
 const ANKR_MULTI = ankrMulti();
@@ -27,8 +28,7 @@ const TRON_RPC = ANKR_RPC.tron;
 // عقد USDT الرسمي على Tron
 const TRON_USDT_CONTRACT = "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t";
 
-const KEY_WALLET_PIN = "wallet_pin";
-const KEY_WALLET_NAME = "wallet_name";
+const KEY_WALLET_NAME = "wallet_name"; // ✅ تم حذف: KEY_WALLET_PIN
 const KEY_LAST_PRICES = "last_prices_v1";
 const KEY_LAST_BALANCES = "last_balances_v1";
 const PRICES_CACHE_TTL_MIN = 60;
@@ -212,8 +212,10 @@ export default function HomeScreen({ navigation }: any) {
 
   useEffect(() => {
     (async () => {
-      const pin = await SecureStore.getItemAsync(KEY_WALLET_PIN);
-      if (!pin) { navigation.replace("SetPin"); return; }
+      // ✅ التعديل الأساسي: استخدام hasPin بدلاً من wallet_pin
+      const pinExists = await hasPin();
+      if (!pinExists) { navigation.replace("SetPin"); return; }
+      
       const nm = await SecureStore.getItemAsync(KEY_WALLET_NAME);
       if (nm) setWalletName(nm);
 

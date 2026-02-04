@@ -11,9 +11,11 @@ import {
   SUN_PER_TRX
 } from "../tronHub";
 
+// ✅ استيراد دالة verifyPin
+import { verifyPin } from "../screens/pinAuth";
+
 const SYMBOL = "USDT";
 const KEY_ADDR = "tron_address";
-const KEY_PIN  = "wallet_pin";
 const KEY_PK   = "tron_privateKey";
 
 // عقد USDT (TRC20) الرسمي على TRON
@@ -216,14 +218,12 @@ export default function USDT_TRON({ navigation }: any) {
     return pk;
   };
 
-  const verifyPin = async (): Promise<boolean> => {
-    const savedPin = await SecureStore.getItemAsync(KEY_PIN);
-    return (savedPin || "") === pin;
-  };
-
   const onSendWithResult = async () => {
     try {
-      if (!await verifyPin()) throw new Error("الرقم السري غير صحيح");
+      // ✅ التعديل: استخدام verifyPin بدلاً من المقارنة المباشرة
+      const ok = await verifyPin(pin);
+      if (!ok) throw new Error("الرقم السري غير صحيح");
+      
       const pk = await getPkEnsured();
 
       const toAddress = recipient.trim();

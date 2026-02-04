@@ -4,9 +4,11 @@ import { Alert } from "react-native";
 import * as SecureStore from "expo-secure-store";
 import * as Clipboard from "expo-clipboard";
 import { ethers } from "ethers";
-
 import TokenTemplate from "./TokenTemplate";
 import { NETWORKS, EXPLORER_TX } from "../providers";
+
+// ✅ استيراد دالة verifyPin
+import { verifyPin } from "../screens/pinAuth";
 
 /* =========================
    ARB (ERC20) on Ethereum L1
@@ -104,9 +106,9 @@ export default function ARB_ETH({ navigation }: any) {
   };
 
   const onSendWithResult = async () => {
-    // تحقق من PIN
-    const savedPin = await SecureStore.getItemAsync("wallet_pin");
-    if (savedPin !== pin) throw new Error("الرقم السري غير صحيح");
+    // ✅ التعديل: استخدام verifyPin بدلاً من المقارنة المباشرة
+    const ok = await verifyPin(pin);
+    if (!ok) throw new Error("الرقم السري غير صحيح");
 
     // تحقّقات أساسية
     const to = recipient.trim();

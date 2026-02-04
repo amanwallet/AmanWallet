@@ -6,6 +6,9 @@ import { Alert } from "react-native";
 import { ethers } from "ethers";
 import { NETWORKS, EXPLORER_TX } from "../providers";
 
+// ✅ استيراد دالة verifyPin
+import { verifyPin } from "../screens/pinAuth";
+
 const TOKEN_ADDRESS = "0x55d398326f99059fF775485246999027B3197955";
 
 export default function USDT_BEP20({ navigation }: any) {
@@ -47,8 +50,9 @@ export default function USDT_BEP20({ navigation }: any) {
   }
 
   async function send() {
-    const saved = await SecureStore.getItemAsync("wallet_pin");
-    if (saved !== pin) {
+    // ✅ التعديل: استخدام verifyPin بدلاً من المقارنة المباشرة
+    const ok = await verifyPin(pin);
+    if (!ok) {
       Alert.alert("خطأ", "PIN غير صحيح");
       return;
     }

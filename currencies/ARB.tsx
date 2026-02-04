@@ -8,6 +8,9 @@ import { getERC20Balance, sendERC20 } from "../providerAdapter";
 import { NETWORKS, EXPLORER_TX } from "../providers";
 import { useTranslation } from "react-i18next";
 
+// ✅ استيراد دالة verifyPin
+import { verifyPin } from "../screens/pinAuth";
+
 const ARB_ADDRESS = "0x912CE59144191C1204E64559FE8253a0e49E6548";
 const DECIMALS = 18;
 
@@ -35,8 +38,10 @@ export default function ARB({ navigation }: any) {
   const copy = async () => { if (!address) return; await Clipboard.setStringAsync(address); Alert.alert(t("alerts.ok"), t("token.copied")); };
 
   const onSendWithResult = async () => {
-    const saved = await SecureStore.getItemAsync("wallet_pin");
-    if (saved !== pin) throw new Error(t("alerts.pinWrongOld"));
+    // ✅ التعديل: استخدام verifyPin بدلاً من المقارنة المباشرة
+    const ok = await verifyPin(pin);
+    if (!ok) throw new Error(t("alerts.pinWrongOld"));
+    
     const pk = await SecureStore.getItemAsync("privateKey"); if (!pk) throw new Error("لا يوجد مفتاح خاص");
     if (!recipient || !amount) throw new Error("أدخل العنوان والمبلغ");
     setSending(true);

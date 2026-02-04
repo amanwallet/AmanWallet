@@ -7,6 +7,9 @@ import TokenTemplate from './TokenTemplate';
 import { getERC20Balance, sendERC20, getProvider } from '../providerAdapter';
 import { NETWORKS } from "../providers";
 
+// ✅ استيراد دالة verifyPin
+import { verifyPin } from "../screens/pinAuth";
+
 const usdtAddress = '0xdAC17F958D2ee523a2206206994597C13D831ec7';
 const DECIMALS = 6;
 
@@ -46,7 +49,10 @@ export default function USDT_ERC20({ navigation }: any) {
   const copyToClipboard = async () => { if (!walletAddress) return; await Clipboard.setStringAsync(walletAddress); Alert.alert('تم النسخ', 'تم نسخ عنوان المحفظة'); };
 
   const onSendWithResult = async () => {
-    const storedPin = await SecureStore.getItemAsync('wallet_pin'); if (pin !== storedPin) throw new Error('PIN غير صحيح');
+    // ✅ التعديل: استخدام verifyPin بدلاً من المقارنة المباشرة
+    const ok = await verifyPin(pin);
+    if (!ok) throw new Error('PIN غير صحيح');
+    
     if (!recipient || !amount) throw new Error('أدخل العنوان والمبلغ');
     const pk = await SecureStore.getItemAsync('privateKey'); if (!pk) throw new Error('لا يوجد مفتاح خاص');
     setSending(true);

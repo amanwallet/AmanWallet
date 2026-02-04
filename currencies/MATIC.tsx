@@ -6,6 +6,9 @@ import { ethers } from "ethers";
 import TokenTemplate from "./TokenTemplate";
 import { getBalance, send, maxSendableNative, estimateNetworkFee } from "../tokenHub";
 
+// ✅ استيراد دالة verifyPin
+import { verifyPin } from "../screens/pinAuth";
+
 const TOKEN_ID = "MATIC@polygon" as const;
 
 export default function MATIC({ navigation }: any) {
@@ -47,8 +50,10 @@ export default function MATIC({ navigation }: any) {
   };
 
   const onSendWithResult = async () => {
-    const savedPin = await SecureStore.getItemAsync("wallet_pin");
-    if (!savedPin || savedPin !== pin) throw new Error("PIN غير صحيح");
+    // ✅ التعديل: استخدام verifyPin بدلاً من المقارنة المباشرة
+    const ok = await verifyPin(pin);
+    if (!ok) throw new Error("PIN غير صحيح");
+    
     const pk = await SecureStore.getItemAsync("privateKey");
     if (!pk) throw new Error("لا يوجد مفتاح خاص");
     setSending(true);

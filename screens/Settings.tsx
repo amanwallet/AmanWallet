@@ -12,6 +12,9 @@ import * as Updates from 'expo-updates';
 import { useTheme, Mode } from '../ThemeProvider';
 import { ChevronRight, User, Lock, Fingerprint, Globe, Sun, RefreshCw, LogOut, Trash2 } from 'lucide-react-native';
 
+// ✅ استيراد دوال PIN الجديدة
+import { verifyPin, setPin, deletePin } from "./pinAuth";
+
 /* ---------- عناصر واجهة قابلة لإعادة الاستخدام - تم تصحيح RowItem ---------- */
 
 const Divider = memo(({ color }: { color: string }) => (
@@ -356,7 +359,9 @@ export default function Settings() {
   const deleteWallet = async () => {
     setIsDeleting(true);
     try {
-      await SecureStore.deleteItemAsync('wallet_pin');
+      // ✅ التعديل: استخدام deletePin الجديدة
+      await deletePin();
+      
       await SecureStore.deleteItemAsync('mnemonic');
       await SecureStore.deleteItemAsync('privateKey');
       await SecureStore.deleteItemAsync('btc_address');
@@ -389,7 +394,14 @@ export default function Settings() {
     if (type === 'lang') {
       return lang === 'ar' ? t('settings.arabic') : t('settings.english');
     }
-    const themeLabel = mode === 'system' ? t('settings.themeSystem') : mode === 'light' ? t('settings.themeLight') : t('settings.themeDark');
+    const themeLabel =
+      mode === "system"
+        ? t("settings.themeSystem")
+        : mode === "light"
+          ? t("settings.themeLight")
+          : mode === "dark"
+            ? t("settings.themeDark")
+            : t("settings.themeSystem");
     return themeLabel;
   };
 
@@ -606,8 +618,9 @@ export default function Settings() {
   async function handleNextPinStep() {
     if (pinEntered.length !== 6) return;
     if (pinStep === 1) {
-      const current = await SecureStore.getItemAsync('wallet_pin');
-      if (!current || current !== pinEntered) {
+      // ✅ التعديل: استخدام verifyPin بدلاً من SecureStore القديم
+      const ok = await verifyPin(pinEntered);
+      if (!ok) {
         setPinEntered('');
         Alert.alert(t('alerts.error'), t('alerts.pinWrongOld'));
         return;
@@ -628,7 +641,8 @@ export default function Settings() {
         Alert.alert(t('alerts.error'), t('alerts.pinMismatch'));
         return;
       }
-      await SecureStore.setItemAsync('wallet_pin', pinNew);
+      // ✅ التعديل: استخدام setPin الجديدة
+      await setPin(pinNew);
       setPinModalVisible(false);
       Alert.alert(t('alerts.ok'), t('alerts.pinChanged'));
     }
